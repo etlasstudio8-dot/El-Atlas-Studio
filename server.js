@@ -30,6 +30,7 @@ const corsOptions = {
       process.env.DASHBOARD_URL,
       'https://elatlas-studio.web.app',
       'https://elatlas-studio.firebaseapp.com',
+      'https://www.elatlas-studio.web.app', 
       'http://localhost:3000',
       'http://localhost:5173',
       'http://127.0.0.1:5500',
