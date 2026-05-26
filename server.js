@@ -28,9 +28,14 @@ const corsOptions = {
     const allowedOrigins = [
       process.env.FRONTEND_URL,
       process.env.DASHBOARD_URL,
+      // Firebase Hosting — production
+      'https://elatlas-studio.web.app',
+      'https://elatlas-studio.firebaseapp.com',
+      // Local dev
       'http://localhost:3000',
       'http://localhost:5173',
-      'http://127.0.0.1:5500'
+      'http://127.0.0.1:5500',
+      'http://127.0.0.1:3000',
     ].filter(Boolean);
 
     if (!origin || allowedOrigins.includes(origin)) {
