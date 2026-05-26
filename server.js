@@ -8,35 +8,16 @@ const connectDB = require('./config/database');
 // Initialize express app
 const app = express();
 
-// Connect to MongoDB + Auto-seed admin
-connectDB().then(async () => {
-  try {
-    const User = require('./models/User');
-    const count = await User.countDocuments();
-    if (count === 0) {
-      await User.create({
-        name: 'Admin',
-        email: process.env.ADMIN_EMAIL || 'alishafaq782@gmail.com',
-        username: 'admin',
-        password: 'admin123',
-        role: 'admin',
-        permissions: ['all'],
-        isActive: true
-      });
-      console.log('✅ Admin user auto-created!');
-    }
-  } catch (e) {
-    console.error('Seed error:', e.message);
-  }
-});
+// Connect to MongoDB
+connectDB();
 
 // Security Middleware
 app.use(helmet());
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
   message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/api/', limiter);
@@ -47,8 +28,10 @@ const corsOptions = {
     const allowedOrigins = [
       process.env.FRONTEND_URL,
       process.env.DASHBOARD_URL,
+      // Firebase Hosting — production
       'https://elatlas-studio.web.app',
       'https://elatlas-studio.firebaseapp.com',
+      // Local dev
       'http://localhost:3000',
       'http://localhost:5173',
       'http://127.0.0.1:5500',
@@ -112,6 +95,7 @@ app.use((req, res, next) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
+  
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal server error',
@@ -135,7 +119,7 @@ const server = app.listen(PORT, () => {
 });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
+process.on('unhandledRejection', (err, promise) => {
   console.log('❌ Unhandled Rejection:', err.message);
   server.close(() => process.exit(1));
 });
