@@ -81,6 +81,26 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
+// ─── TEMP RESET (DELETE AFTER USE) ───────────────────────────────────────────
+app.get('/api/reset-admin', async (req, res) => {
+  try {
+    const User = require('./models/User');
+    await User.deleteOne({ email: 'alishafaq782@gmail.com' });
+    await User.create({
+      name: 'Shafaq Ali',
+      email: 'alishafaq782@gmail.com',
+      username: 'admin',
+      password: 'admin123',
+      role: 'admin',
+      permissions: ['all'],
+      isActive: true
+    });
+    res.json({ success: true, message: 'Admin reset! Password is admin123' });
+  } catch(e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
 // ─── API Routes ──────────────────────────────────────────────────────────────
 app.use('/api/auth',      require('./routes/authRoutes'));
 app.use('/api/users',     require('./routes/userRoutes'));
