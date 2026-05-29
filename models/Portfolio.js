@@ -1,3 +1,7 @@
+// models/Portfolio.js — FIXED VERSION
+// Problem: enum had 'Web Development' but dashboard was sending 'web', 'software', etc.
+// Fix: enum updated to short lowercase values that match the dashboard form
+
 const mongoose = require('mongoose');
 
 const portfolioSchema = new mongoose.Schema({
@@ -13,7 +17,8 @@ const portfolioSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['Web Development', 'Mobile App', 'UI/UX Design', 'Branding', 'Digital Marketing', 'E-commerce', 'Custom']
+    // FIXED: matches the <select> values sent by the dashboard
+    enum: ['web', 'software', 'brand', 'video', 'design', 'marketing', 'other']
   },
   tags: [{
     type: String,
