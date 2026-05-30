@@ -200,10 +200,11 @@ exports.updateProfile = async (req, res) => {
       });
     }
 
-    // Update fields
+    // Update fields — accept both 'avatar' and 'avatarImg' field names
+    const avatarValue = req.body.avatar || avatarImg;
     if (name) user.name = name;
     if (email) user.email = email;
-    if (avatarImg) user.avatarImg = avatarImg;
+    if (avatarValue) user.avatarImg = avatarValue;
 
     // Regenerate avatar initials if name changed
     if (name) {
@@ -220,7 +221,7 @@ exports.updateProfile = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        avatar: user.avatar,
+        avatar: user.avatarImg || user.avatar,
         avatarImg: user.avatarImg
       }
     });
