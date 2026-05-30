@@ -30,9 +30,13 @@ exports.getBlogById = async (req, res) => {
 exports.createBlog = async (req, res) => {
   try {
     const blogData = { ...req.body, author: req.user.id };
+    // Handle image: file upload takes priority, then JSON body fields
     if (req.file) {
       const upload = await uploadToCloudinary(req.file, 'el-atlas/blogs');
       blogData.featuredImage = { url: upload.url, publicId: upload.publicId };
+    } else {
+      const imgUrl = req.body.imageUrl || req.body.thumbnail || req.body.image || req.body.coverImage;
+      if (imgUrl) blogData.featuredImage = { url: imgUrl };
     }
     const blog = await Blog.create(blogData);
     res.status(201).json({ success: true, message: 'Blog created successfully', data: blog });
@@ -49,6 +53,9 @@ exports.updateBlog = async (req, res) => {
       if (blog.featuredImage?.publicId) await deleteFromCloudinary(blog.featuredImage.publicId);
       const upload = await uploadToCloudinary(req.file, 'el-atlas/blogs');
       req.body.featuredImage = { url: upload.url, publicId: upload.publicId };
+    } else {
+      const imgUrl = req.body.imageUrl || req.body.thumbnail || req.body.image || req.body.coverImage;
+      if (imgUrl) req.body.featuredImage = { url: imgUrl };
     }
     blog = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.status(200).json({ success: true, message: 'Blog updated successfully', data: blog });
