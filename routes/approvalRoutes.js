@@ -6,6 +6,7 @@ const { protect, adminOnly } = require('../middleware/auth');
 router.get('/', protect, adminOnly, getAllApprovals);
 router.get('/my', protect, getMyApprovals);
 router.post('/', protect, createApproval);
+router.put('/:id', protect, adminOnly, reviewApproval);
 router.put('/:id/review', protect, adminOnly, reviewApproval);
 router.delete('/:id', protect, deleteApproval);
 
