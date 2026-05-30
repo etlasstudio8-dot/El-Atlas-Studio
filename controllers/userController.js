@@ -27,6 +27,31 @@ exports.getUserById = async (req, res) => {
   }
 };
 
+// @desc    Generic update user (Admin only)
+exports.updateUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('+password');
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    const { name, role, permissions, position, password, avatar, avatarImg } = req.body;
+    if (name !== undefined) user.name = name;
+    if (position !== undefined) user.position = position;
+    if (avatar !== undefined) user.avatarImg = avatar;
+    if (avatarImg !== undefined) user.avatarImg = avatarImg;
+    if (role !== undefined) {
+      if (user.email === process.env.ADMIN_EMAIL) {
+        return res.status(403).json({ success: false, message: 'Cannot modify super admin role' });
+      }
+      user.role = role;
+    }
+    if (permissions !== undefined) user.permissions = permissions;
+    if (password !== undefined && password.length >= 6) user.password = password;
+    await user.save();
+    res.status(200).json({ success: true, message: 'User updated successfully', data: { id: user._id, name: user.name, email: user.email, role: user.role, permissions: user.permissions, position: user.position } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error updating user', error: error.message });
+  }
+};
+
 // @desc    Update user role and permissions (Admin only)
 exports.updateUserRole = async (req, res) => {
   try {
