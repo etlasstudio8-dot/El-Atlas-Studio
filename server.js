@@ -11,27 +11,36 @@ const app = express();
 connectDB();
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
-// Must be BEFORE helmet and all routes
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   process.env.DASHBOARD_URL,
+  // Firebase hosting
   'https://elatlas-studio.web.app',
   'https://elatlas-studio.firebaseapp.com',
+  // Render (your admin HTML is served from here too)
+  'https://el-atlas-studio.onrender.com',
+  // Common local dev ports
   'http://localhost:3000',
+  'http://localhost:5000',
   'http://localhost:5173',
   'http://localhost:5500',
-  'http://127.0.0.1:5500',
   'http://127.0.0.1:3000',
+  'http://127.0.0.1:5000',
   'http://127.0.0.1:5173',
+  'http://127.0.0.1:5500',
 ]
   .filter(Boolean)
   .map(u => u.replace(/\/$/, ''));
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
+    // Allow requests with no origin (Postman, curl, mobile apps, server-to-server)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Allow any onrender.com subdomain (covers all your deployed apps)
+    if (/\.onrender\.com$/.test(origin)) return callback(null, true);
+    // Allow any web.app / firebaseapp.com subdomain
+    if (/\.(web\.app|firebaseapp\.com)$/.test(origin)) return callback(null, true);
     console.warn('CORS blocked origin:', origin);
     callback(new Error('Not allowed by CORS'));
   },
@@ -42,12 +51,9 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-// Handle preflight for ALL routes
 app.options('*', cors(corsOptions));
 
 // ─── Helmet ──────────────────────────────────────────────────────────────────
-// Disable cross-origin policies that conflict with CORS
 app.use(
   helmet({
     crossOriginResourcePolicy: false,
@@ -58,48 +64,26 @@ app.use(
 
 // ─── Rate Limiting ───────────────────────────────────────────────────────────
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,                  // increased from 100 for development
+  windowMs: 15 * 60 * 1000,
+  max: 300,
   standardHeaders: true,
   legacyHeaders: false,
-  message: {
-    success: false,
-    message: 'Too many requests from this IP, please try again later.'
-  }
+  message: { success: false, message: 'Too many requests, please try again later.' }
 });
 app.use('/api/', limiter);
 
 // ─── Body Parsers ────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// 25mb to handle base64 image uploads from the admin dashboard
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
-// ─── Request Logger (dev) ────────────────────────────────────────────────────
+// ─── Request Logger (dev only) ───────────────────────────────────────────────
 if (process.env.NODE_ENV !== 'production') {
   app.use((req, res, next) => {
     console.log(`${req.method} ${req.path}`);
     next();
   });
 }
-
-// ─── TEMP RESET (DELETE AFTER USE) ───────────────────────────────────────────
-app.get('/api/reset-admin', async (req, res) => {
-  try {
-    const User = require('./models/User');
-    await User.deleteOne({ email: 'alishafaq782@gmail.com' });
-    await User.create({
-      name: 'Shafaq Ali',
-      email: 'alishafaq782@gmail.com',
-      username: 'admin',
-      password: 'admin123',
-      role: 'admin',
-      permissions: ['all'],
-      isActive: true
-    });
-    res.json({ success: true, message: 'Admin reset! Password is admin123' });
-  } catch(e) {
-    res.status(500).json({ success: false, message: e.message });
-  }
-});
 
 // ─── API Routes ──────────────────────────────────────────────────────────────
 app.use('/api/auth',      require('./routes/authRoutes'));
@@ -129,17 +113,9 @@ app.get('/', (req, res) => {
     success: true,
     message: 'Welcome to EL ATLAS Backend API',
     version: '1.0.0',
-    health: '/api/health',
     routes: [
-      '/api/auth',
-      '/api/users',
-      '/api/content',
-      '/api/portfolio',
-      '/api/blog',
-      '/api/services',
-      '/api/team',
-      '/api/contacts',
-      '/api/approvals',
+      '/api/auth', '/api/users', '/api/content', '/api/portfolio',
+      '/api/blog', '/api/services', '/api/team', '/api/contacts', '/api/approvals'
     ]
   });
 });
@@ -154,33 +130,35 @@ app.use((req, res) => {
 
 // ─── Global Error Handler ────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error('Global error:', err.stack || err.message);
+  console.error('Global error:', err.message);
 
-  // CORS error
-  if (err.message === 'Not allowed by CORS') {
+  if (err.message === 'Not allowed by CORS')
     return res.status(403).json({ success: false, message: 'CORS policy blocked this request.' });
-  }
 
-  // Mongoose validation error
   if (err.name === 'ValidationError') {
     const messages = Object.values(err.errors).map(e => e.message).join(', ');
     return res.status(400).json({ success: false, message: messages });
   }
 
-  // Mongoose duplicate key
   if (err.code === 11000) {
-    return res.status(400).json({ success: false, message: 'Duplicate key error — record already exists.' });
+    const field = Object.keys(err.keyValue || {})[0] || 'field';
+    const value = err.keyValue?.[field] || '';
+    return res.status(400).json({
+      success: false,
+      message: `${field} '${value}' already exists.`
+    });
   }
 
-  // JWT error
-  if (err.name === 'JsonWebTokenError') {
+  if (err.name === 'JsonWebTokenError')
     return res.status(401).json({ success: false, message: 'Invalid token.' });
-  }
+
+  if (err.name === 'TokenExpiredError')
+    return res.status(401).json({ success: false, message: 'Token expired, please sign in again.' });
 
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
   });
 });
 
@@ -189,16 +167,13 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`🚀 EL ATLAS Backend running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`📋 Health check: http://localhost:${PORT}/api/health`);
 });
 
-// ─── Unhandled Rejection ─────────────────────────────────────────────────────
 process.on('unhandledRejection', (err) => {
   console.error('❌ Unhandled Rejection:', err.message);
   server.close(() => process.exit(1));
 });
 
-// ─── Uncaught Exception ──────────────────────────────────────────────────────
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err.message);
   process.exit(1);
