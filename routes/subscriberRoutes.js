@@ -19,7 +19,7 @@ router.post('/', async (req, res) => {
     // Welcome email
     await resend.emails.send({
       from: 'El Atlas Studio <onboarding@resend.dev>',
-      to: email,
+      to: 'alishafaq782@gmail.com',
       subject: 'Welcome to El Atlas Studio Insights!',
       html: `
         <div style="font-family:sans-serif;max-width:500px;margin:auto;padding:32px;">
