@@ -94,6 +94,7 @@ app.use('/api/blog',      require('./routes/blogRoutes'));
 app.use('/api/services',  require('./routes/serviceRoutes'));
 app.use('/api/team',      require('./routes/teamRoutes'));
 app.use('/api/contacts',  require('./routes/contactRoutes'));
+app.use('/api/subscribers',  require('./routes/subscriberRoutes'));
 app.use('/api/approvals', require('./routes/approvalRoutes'));
 
 // ─── Health Check ────────────────────────────────────────────────────────────
