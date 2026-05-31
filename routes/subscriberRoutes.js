@@ -16,19 +16,33 @@ router.post('/', async (req, res) => {
 
     await Subscriber.create({ email });
 
-    // Welcome email
-    await resend.emails.send({
-      from: 'El Atlas Studio <onboarding@resend.dev>',
-      to: 'etlasstudio8@gmail.com',
-      subject: 'Welcome to El Atlas Studio Insights!',
-      html: `
-        <div style="font-family:sans-serif;max-width:500px;margin:auto;padding:32px;">
-          <h2 style="color:#E8192C;">Welcome to El Atlas Studio!</h2>
-          <p>Thanks for subscribing to our insights. You'll be the first to know about our latest work, tips, and updates.</p>
-          <p style="color:#666;">— El Atlas Studio Team</p>
-        </div>
-      `
-    });
+   // Welcome email to user
+await resend.emails.send({
+  from: 'El Atlas Studio <onboarding@resend.dev>',
+  to: email,
+  subject: 'Welcome to El Atlas Studio Insights!',
+  html: `
+    <div style="font-family:sans-serif;max-width:500px;margin:auto;padding:32px;">
+      <h2 style="color:#E8192C;">Welcome to El Atlas Studio!</h2>
+      <p>Thanks for subscribing to our insights.</p>
+      <p>You'll receive our latest updates and resources.</p>
+      <p style="color:#666;">— El Atlas Studio Team</p>
+    </div>
+  `
+});
+
+// Notification email to admin
+await resend.emails.send({
+  from: 'El Atlas Studio <onboarding@resend.dev>',
+  to: 'etlasstudio8@gmail.com',
+  subject: `New Subscriber: ${email}`,
+  html: `
+    <div style="font-family:sans-serif;padding:20px;">
+      <h2>New Subscriber 🎉</h2>
+      <p><strong>${email}</strong> has subscribed.</p>
+    </div>
+  `
+});
 
     res.status(201).json({ success: true, message: 'Subscribed successfully' });
   } catch (error) {
