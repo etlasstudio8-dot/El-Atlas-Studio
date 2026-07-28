@@ -77,3 +77,4 @@ const teamMemberSchema = new mongoose.Schema({
 teamMemberSchema.index({ status: 1, isFeatured: -1, order: 1 });
 
 module.exports = mongoose.model('TeamMember', teamMemberSchema);
+
