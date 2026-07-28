@@ -2327,6 +2327,23 @@
         function storeObj(o) { const k = 'o' + (++_si); _store[k] = o; return k; }
         function getObj(k) { return _store[k] || null; }
 
+        function expireSession(message = 'Your session expired. Please sign in again.') {
+            localStorage.removeItem('ea_token');
+            localStorage.removeItem('ea_user');
+            user = null;
+            const wrap = document.getElementById('wrap');
+            const bottomNav = document.getElementById('bottom-nav');
+            const loginScreen = document.getElementById('login');
+            const error = document.getElementById('lerr');
+            if (wrap) wrap.style.display = 'none';
+            if (bottomNav) bottomNav.style.display = 'none';
+            if (loginScreen) loginScreen.style.display = 'flex';
+            if (error) {
+                error.textContent = message;
+                error.style.display = 'block';
+            }
+        }
+
         // ── PASSWORD EYE TOGGLE ──
         function togglePw(inputId, btn) {
             const inp = document.getElementById(inputId); if (!inp) return;
@@ -2349,6 +2366,9 @@
                 body: body ? JSON.stringify(body) : undefined
             });
             const j = await res.json().catch(() => ({}));
+            if (res.status === 401 && path !== '/auth/login') {
+                expireSession(j.message || 'Your session expired. Please sign in again.');
+            }
             if (!res.ok) throw new Error(j.message || j.error || `Server error (${res.status})`);
             return j;
         }
@@ -2356,6 +2376,11 @@
             const token = localStorage.getItem('ea_token');
             const res = await fetch(API + path, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
             const j = await res.json().catch(() => ({}));
+            if (res.status === 401) {
+                expireSession(j.message || 'Your session expired. Please sign in again.');
+                throw new Error(j.message || 'Session expired');
+            }
+            if (!res.ok) throw new Error(j.message || j.error || `Server error (${res.status})`);
             return j.data ?? j;
         }
         async function apiForm(path, formData) {
@@ -2366,6 +2391,9 @@
                 body: formData
             });
             const j = await res.json().catch(() => ({}));
+            if (res.status === 401) {
+                expireSession(j.message || 'Your session expired. Please sign in again.');
+            }
             if (!res.ok) throw new Error(j.message || j.error || `Upload failed (${res.status})`);
             return j;
         }
@@ -3541,13 +3569,23 @@
             setTimeout(() => loader.classList.add('ldr-floating'), 3500);
             setTimeout(() => {
                 loader.style.opacity = '0'; loader.style.pointerEvents = 'none';
-                setTimeout(() => {
+                setTimeout(async () => {
                     loader.style.display = 'none';
                     try {
                         const stored = localStorage.getItem('ea_user'); const token = localStorage.getItem('ea_token');
-                        if (stored && token) { user = JSON.parse(stored); initApp(); }
+                        if (stored && token) {
+                            const cachedUser = JSON.parse(stored);
+                            const freshUser = await apiGet('/auth/me');
+                            user = { ...cachedUser, ...freshUser };
+                            localStorage.setItem('ea_user', JSON.stringify(user));
+                            initApp();
+                        } else {
+                            document.getElementById('login').style.display = 'flex';
+                        }
+                    } catch {
+                        if (localStorage.getItem('ea_token')) expireSession();
                         else document.getElementById('login').style.display = 'flex';
-                    } catch { document.getElementById('login').style.display = 'flex'; }
+                    }
                 }, 800);
             }, 4200);
         });
