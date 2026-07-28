@@ -7,6 +7,10 @@ const connectDB = require('./config/database');
 
 const app = express();
 
+// Render terminates HTTPS at one reverse proxy. Trust that hop so
+// express-rate-limit can safely use the real client IP from X-Forwarded-For.
+app.set('trust proxy', 1);
+
 // ─── Database ────────────────────────────────────────────────────────────────
 connectDB();
 

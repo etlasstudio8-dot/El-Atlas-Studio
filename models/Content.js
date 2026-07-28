@@ -63,6 +63,5 @@ const contentSchema = new mongoose.Schema({
 
 // Index for faster queries
 contentSchema.index({ section: 1, status: 1, isActive: 1 });
-contentSchema.index({ key: 1 });
 
 module.exports = mongoose.model('Content', contentSchema);
