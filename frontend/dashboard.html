@@ -2689,7 +2689,7 @@
         }
         async function syncTeamMember(employeeData) {
             try {
-                const teamArr = await apiGet('/team'); const arr = Array.isArray(teamArr) ? teamArr : [];
+                const teamArr = await apiGet('/team/admin/all'); const arr = Array.isArray(teamArr) ? teamArr : [];
                 const match = arr.find(m => {
                     const mName = (m.name || '').toLowerCase().trim(); const eName = (employeeData.name || '').toLowerCase().trim();
                     const mEmail = (m.email || '').toLowerCase().trim(); const eEmail = (employeeData.email || '').toLowerCase().trim();
@@ -2711,7 +2711,7 @@
         PAGES.dashboard = async () => {
             const pc = document.getElementById('content');
             try {
-                const [contacts, portfolio, team, blog] = await Promise.all([apiGet('/contacts'), apiGet('/portfolio'), apiGet('/team'), apiGet('/blog')]);
+                const [contacts, portfolio, team, blog] = await Promise.all([apiGet('/contacts'), apiGet('/portfolio'), apiGet('/team/admin/all'), apiGet('/blog')]);
                 const c = Array.isArray(contacts) ? contacts : []; const p = Array.isArray(portfolio) ? portfolio : [];
                 const t = Array.isArray(team) ? team : []; const b = Array.isArray(blog) ? blog : [];
                 const recent = c.slice(0, 5).map(ct => `
@@ -2966,7 +2966,7 @@
             const admin = isAdmin();
             try {
                 const [members, portfolioItems, usersRaw] = await Promise.all([
-                    apiGet('/team'), apiGet('/portfolio'),
+                    apiGet('/team/admin/all'), apiGet('/portfolio'),
                     admin ? apiGet('/users') : Promise.resolve([])
                 ]);
                 const arr = Array.isArray(members) ? members : [];
@@ -3098,7 +3098,7 @@
             spinBtn(btn, 'Adding…');
             try {
                 await api('POST', '/team', { name: u.name, position: u.position || ROLE_LABELS[u.role] || u.role || 'Employee', email: u.email || '', expertise: [], skills: [], showOnWebsite: false, bio: '', social: {}, ...(u.avatarImg || u.avatar ? { image: { url: u.avatarImg || u.avatar }, avatar: u.avatarImg || u.avatar } : {}) });
-                const freshTeam = await apiGet('/team');
+                const freshTeam = await apiGet('/team/admin/all');
                 window._teamArr = Array.isArray(freshTeam) ? freshTeam : [];
                 toast(`${u.name} added to Team!`);
                 filterTeamView(document.getElementById('team-search')?.value || '');

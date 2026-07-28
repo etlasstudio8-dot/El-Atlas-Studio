@@ -53,6 +53,10 @@ const teamMemberSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  showOnWebsite: {
+    type: Boolean,
+    default: true
+  },
   order: {
     type: Number,
     default: 0
@@ -74,7 +78,7 @@ const teamMemberSchema = new mongoose.Schema({
   timestamps: true
 });
 
-teamMemberSchema.index({ status: 1, isFeatured: -1, order: 1 });
+teamMemberSchema.index({ showOnWebsite: 1, status: 1, isFeatured: -1, order: 1 });
 
 module.exports = mongoose.model('TeamMember', teamMemberSchema);
 

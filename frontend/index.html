@@ -3969,7 +3969,7 @@
 
         // ── RENDER TEAM ──
         function renderTeam(items) {
-            const active = items.filter(m => m.status !== 'inactive');
+            const active = items.filter(m => m.status !== 'inactive' && m.showOnWebsite !== false);
             if (!active.length) { document.getElementById('team-grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-tertiary)">No team members found.</div>'; return; }
             const ini = n => n ? n.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : '??';
             document.getElementById('team-grid').innerHTML = active.map((m, i) => {
