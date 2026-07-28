@@ -98,3 +98,4 @@ exports.deleteContact = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error deleting contact', error: error.message });
   }
 };
+
