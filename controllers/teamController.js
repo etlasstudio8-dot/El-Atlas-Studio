@@ -1,4 +1,5 @@
 const TeamMember = require('../models/TeamMember');
+const User = require('../models/User');
 const { uploadToCloudinary, deleteFromCloudinary } = require('../middleware/upload');
 
 const getTeamMembers = async (req, res, includeHidden = false) => {
@@ -52,6 +53,61 @@ exports.createTeamMember = async (req, res) => {
   } catch (error) {
     const status = error.name === 'ValidationError' ? 400 : 500;
     res.status(status).json({ success: false, message: error.message || 'Error creating team member' });
+  }
+};
+
+exports.addUserToTeam = async (req, res) => {
+  try {
+    const employee = await User.findById(req.params.userId).select('name email role position avatar avatarImg');
+    if (!employee) {
+      return res.status(404).json({ success: false, message: 'Employee not found' });
+    }
+
+    const duplicateConditions = [];
+    if (employee.email) duplicateConditions.push({ email: employee.email.toLowerCase() });
+    if (employee.name) {
+      const escapedName = employee.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      duplicateConditions.push({ name: { $regex: `^${escapedName}$`, $options: 'i' } });
+    }
+    const existing = duplicateConditions.length
+      ? await TeamMember.findOne({ $or: duplicateConditions })
+      : null;
+
+    if (existing) {
+      return res.status(200).json({
+        success: true,
+        message: 'Employee is already in the team',
+        alreadyExists: true,
+        data: existing
+      });
+    }
+
+    const roleLabels = {
+      admin: 'Admin',
+      editor: 'Editor',
+      moderator: 'Moderator',
+      contributor: 'Contributor',
+      viewer: 'Team Member'
+    };
+    const photo = employee.avatarImg || employee.avatar || '';
+    const member = await TeamMember.create({
+      name: employee.name,
+      position: employee.position || roleLabels[employee.role] || 'Team Member',
+      email: employee.email || '',
+      image: photo ? { url: photo } : undefined,
+      expertise: [],
+      showOnWebsite: false,
+      createdBy: req.user.id
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Employee added to team successfully',
+      data: member
+    });
+  } catch (error) {
+    const status = error.name === 'ValidationError' ? 400 : 500;
+    res.status(status).json({ success: false, message: error.message || 'Error adding employee to team' });
   }
 };
 

@@ -3097,10 +3097,12 @@
             const u = getObj(k); if (!u) return;
             spinBtn(btn, 'Adding…');
             try {
-                await api('POST', '/team', { name: u.name, position: u.position || ROLE_LABELS[u.role] || u.role || 'Employee', email: u.email || '', expertise: [], skills: [], showOnWebsite: false, bio: '', social: {}, ...(u.avatarImg || u.avatar ? { image: { url: u.avatarImg || u.avatar }, avatar: u.avatarImg || u.avatar } : {}) });
-                const freshTeam = await apiGet('/team/admin/all');
-                window._teamArr = Array.isArray(freshTeam) ? freshTeam : [];
-                toast(`${u.name} added to Team!`);
+                const result = await api('POST', '/team/from-user/' + encodeURIComponent(u._id));
+                const member = result?.data;
+                if (!member?._id) throw new Error('Team member was not returned by the server');
+                const current = Array.isArray(window._teamArr) ? window._teamArr : [];
+                window._teamArr = [...current.filter(m => m._id !== member._id), member];
+                toast(result.alreadyExists ? `${u.name} is already in Team` : `${u.name} added to Team!`);
                 filterTeamView(document.getElementById('team-search')?.value || '');
             } catch (e) { toast(e.message, 'err'); restoreBtn(btn); }
         };
