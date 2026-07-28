@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="EL ATLAS project case study">
+    <title>Project Details — EL ATLAS Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#f7f7f5;--card:#fff;--text:#101010;--muted:#686868;--border:#e5e5e2;--red:#e8192c}
+        [data-theme="dark"]{--bg:#090909;--card:#111;--text:#fff;--muted:#aaa;--border:#272727}
+        *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,sans-serif;line-height:1.65}a{color:inherit}
+        .navbar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 60px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(18px);position:fixed;inset:0 0 auto;z-index:1000}
+        .nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none}.nav-logo img{width:50px;height:50px;object-fit:contain}.brand-copy{display:flex;flex-direction:column;line-height:1.05}.brand-name{font:900 18px "Playfair Display",serif;text-transform:uppercase}.brand-name span,.brand-studio,.eyebrow{color:var(--red)}.brand-studio{font:700 13px "Playfair Display",serif}
+        .nav-links{display:flex;align-items:center;gap:34px;list-style:none;margin:0;padding:0}.nav-links a{text-decoration:none;text-transform:uppercase;color:var(--muted);font-size:11px;font-weight:600;letter-spacing:1.1px;transition:.2s}.nav-links a:hover,.nav-links a.active{color:var(--red)}
+        .nav-actions{display:flex;align-items:center;gap:12px}.theme-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--card);display:grid;place-items:center;color:var(--red);cursor:pointer}.theme-btn svg{width:17px;fill:none;stroke:currentColor;stroke-width:1.6}.nav-cta{padding:11px 20px;border-radius:5px;background:var(--red);color:#fff;text-decoration:none;text-transform:uppercase;font-size:11px;font-weight:700;letter-spacing:1px}.hamburger{display:none;border:0;background:transparent;padding:8px;cursor:pointer}.hamburger span{display:block;width:23px;height:2px;background:var(--text);margin:5px 0}
+        .mobile-menu{display:none;position:fixed;inset:76px 0 auto;background:var(--card);border-bottom:1px solid var(--border);padding:20px 24px;z-index:999}.mobile-menu.open{display:grid}.mobile-menu a{text-decoration:none;padding:13px 0;border-bottom:1px solid var(--border);font-weight:700}
+        main{max-width:1180px;margin:auto;padding:142px 24px 100px}.state{min-height:55vh;display:grid;place-items:center;text-align:center;color:var(--muted)}
+        .hero{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,.75fr);gap:56px;align-items:end;margin-bottom:42px}.eyebrow{text-transform:uppercase;font-size:11px;font-weight:700;letter-spacing:2.2px;margin-bottom:13px}h1{font:800 clamp(42px,7vw,82px)/.98 "Playfair Display",serif;letter-spacing:-3px;margin:0}.intro{color:var(--muted);font-size:17px;margin:0}
+        .cover-wrap{width:100%;min-height:380px;max-height:720px;display:grid;place-items:center;padding:14px;border:1px solid var(--border);border-radius:18px;background:var(--card);overflow:hidden}.cover{width:100%;height:100%;max-height:690px;object-fit:contain;border-radius:12px;display:block;cursor:zoom-in}.cover-placeholder{min-height:430px;display:grid;place-items:center;border-radius:18px;background:linear-gradient(135deg,#261316,#111);font:800 90px "Playfair Display";color:var(--red)}
+        .layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:64px;margin-top:64px}.section{margin-bottom:48px}.section h2{font:700 30px "Playfair Display",serif;margin:0 0 15px}.description{white-space:pre-line;color:var(--muted);font-size:16px}.chips{display:flex;flex-wrap:wrap;gap:10px}.chip{padding:9px 13px;border:1px solid var(--border);border-radius:99px;background:var(--card);font-size:13px;font-weight:600}.features{display:grid;gap:12px;padding:0;list-style:none}.features li{padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:12px}.features li:before{content:"✓";color:var(--red);font-weight:800;margin-right:11px}
+        .side{position:sticky;top:108px;height:max-content;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:25px}.meta{padding:15px 0;border-bottom:1px solid var(--border)}.meta:first-child{padding-top:0}.meta:last-of-type{border:0}.meta-label{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);font-weight:700}.meta-value{font-weight:650;margin-top:4px}.demo{margin-top:22px;display:flex;align-items:center;justify-content:center;gap:9px;padding:14px 18px;border-radius:9px;background:var(--red);color:#fff;text-decoration:none;font-weight:700;transition:.2s}.demo:hover{background:#ba1020;transform:translateY(-2px)}
+        .gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}.gallery figure{margin:0;padding:10px;border-radius:15px;background:var(--card);border:1px solid var(--border)}.gallery img{width:100%;height:360px;object-fit:contain;border-radius:10px;display:block;cursor:zoom-in}.gallery figcaption{padding:9px 4px 2px;color:var(--muted);font-size:12px}
+        .video-shell{width:100%;aspect-ratio:16/9;background:#000;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 18px 55px rgba(0,0,0,.16)}.video-shell iframe,.video-shell video{display:block;width:100%;height:100%;border:0;object-fit:contain;background:#000}
+        .lightbox{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.92);display:none;place-items:center;padding:30px}.lightbox.open{display:grid}.lightbox img{max-width:95vw;max-height:90vh;object-fit:contain}.lightbox button{position:absolute;right:24px;top:18px;border:0;background:transparent;color:#fff;font-size:38px;cursor:pointer}
+        @media(max-width:980px){.navbar{padding:0 24px}.nav-links,.nav-cta{display:none}.hamburger{display:block}}
+        @media(max-width:800px){main{padding-top:118px}.hero,.layout{grid-template-columns:1fr;gap:28px}.side{position:static}.cover-wrap{min-height:230px;padding:8px}.cover-placeholder{min-height:270px}.gallery{grid-template-columns:1fr}.gallery img{height:auto;max-height:520px}h1{letter-spacing:-2px}}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="nav-logo">
+            <img src="logo2.png" alt="EL ATLAS logo">
+            <span class="brand-copy"><span class="brand-name">EL <span>ATLAS</span></span><span class="brand-studio">Studio</span></span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html#about">About</a></li><li><a href="index.html#services">Services</a></li><li><a class="active" href="index.html#portfolio">Portfolio</a></li><li><a href="index.html#team">Team</a></li><li><a href="index.html#blog">Blog</a></li><li><a href="index.html#contact">Contact</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="theme-btn" type="button" onclick="toggleTheme()" aria-label="Toggle theme"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v6m0 6v6M4.2 4.2l4.3 4.3m5 5 4.3 4.3M1 12h6m6 0h6M4.2 19.8l4.3-4.3m5-5 4.3-4.3"></path></svg></button>
+            <a class="nav-cta" href="index.html#contact">Start Project</a>
+            <button class="hamburger" type="button" onclick="document.getElementById('mobileMenu').classList.toggle('open')" aria-label="Open menu"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+    <div class="mobile-menu" id="mobileMenu"><a href="index.html#about">About</a><a href="index.html#services">Services</a><a href="index.html#portfolio">Portfolio</a><a href="index.html#team">Team</a><a href="index.html#blog">Blog</a><a href="index.html#contact">Contact</a></div>
+    <main id="app"><div class="state">Loading project details…</div></main>
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()"><button type="button" aria-label="Close">&times;</button><img id="lightboxImage" alt="Project image preview"></div>
+    <script>
+        const API='https://el-atlas-studio.onrender.com/api',app=document.getElementById('app');
+        document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light');
+        const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const safeUrl=v=>{const s=String(v||'');if(/^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(s))return s;try{const u=new URL(s);return ['http:','https:'].includes(u.protocol)?u.href:''}catch{return''}};
+        const arrayOf=v=>Array.isArray(v)?v.filter(Boolean):(v?String(v).split(',').map(x=>x.trim()).filter(Boolean):[]);
+        async function loadProject(){const id=new URLSearchParams(location.search).get('id');if(!id)return showError('Project ID is missing.');try{const r=await fetch(`${API}/portfolio/${encodeURIComponent(id)}`),j=await r.json();if(!r.ok)throw new Error(j.message||'Project not found.');renderProject(j.data||j)}catch(e){showError(e.message||'Unable to load this project.')}}
+        function renderProject(p){
+            document.title=`${p.title||'Project'} — EL ATLAS Studio`;
+            const image=safeUrl(p.mainImage?.url||p.mainImage||p.image||''),hasVideo=Boolean(p.videoUrl||p.video?.url),tech=arrayOf(p.technologies?.length?p.technologies:p.tags),features=arrayOf(p.features),gallery=arrayOf(p.images).map(x=>typeof x==='string'?{url:x}:x).filter(x=>safeUrl(x?.url)),creator=p.createdBy?.name||p.creator?.name||p.author?.name||'EL ATLAS Team',demo=safeUrl(p.projectUrl||p.link||''),date=p.completionDate?new Date(p.completionDate).toLocaleDateString('en-IN',{month:'long',year:'numeric'}):'';
+            app.innerHTML=`<section class="hero"><div><div class="eyebrow">${esc(p.category||'Project Case Study')}</div><h1>${esc(p.title||'Untitled Project')}</h1></div><p class="intro">${esc((p.description||'').slice(0,220))}</p></section>
+            ${image?`<div class="cover-wrap"><img class="cover" src="${esc(image)}" alt="${esc(p.title||'Project')}" onclick="openLightbox(this.src)" onerror="this.closest('.cover-wrap').outerHTML='<div class=&quot;cover-placeholder&quot;>EA</div>'"></div>`:hasVideo?'':'<div class="cover-placeholder">EA</div>'}
+            <div class="layout"><article><section class="section"><h2>About the project</h2><div class="description">${esc(p.description||'Project description will be added soon.')}</div></section>
+            ${tech.length?`<section class="section"><h2>Technologies used</h2><div class="chips">${tech.map(x=>`<span class="chip">${esc(x)}</span>`).join('')}</div></section>`:''}
+            ${features.length?`<section class="section"><h2>Key features</h2><ul class="features">${features.map(x=>`<li>${esc(typeof x==='string'?x:x.title||x.description||'')}</li>`).join('')}</ul></section>`:''}
+            ${gallery.length?`<section class="section"><h2>Project gallery</h2><div class="gallery">${gallery.map((x,i)=>`<figure><img src="${esc(safeUrl(x.url))}" alt="${esc(x.caption||`${p.title||'Project'} image ${i+1}`)}" loading="lazy" onclick="openLightbox(this.src)">${x.caption?`<figcaption>${esc(x.caption)}</figcaption>`:''}</figure>`).join('')}</div></section>`:''}
+            ${renderVideo(p)}</article>
+            <aside class="side"><div class="meta"><div class="meta-label">Created by</div><div class="meta-value">${esc(creator)}</div></div>${p.client?`<div class="meta"><div class="meta-label">Built for</div><div class="meta-value">${esc(p.client)}</div></div>`:''}<div class="meta"><div class="meta-label">Category</div><div class="meta-value">${esc(p.category||'Digital Project')}</div></div>${date?`<div class="meta"><div class="meta-label">Completed</div><div class="meta-value">${esc(date)}</div></div>`:''}${demo?`<a class="demo" href="${esc(demo)}" target="_blank" rel="noopener noreferrer">View Live Demo ↗</a>`:''}</aside></div>`;
+        }
+        function showError(m){app.innerHTML=`<div class="state"><div><h1 style="font-size:42px;letter-spacing:-1px">Project not found</h1><p>${esc(m)}</p><a class="demo" href="index.html#portfolio">View all projects</a></div></div>`}
+        function renderVideo(p){
+            const raw=p.videoUrl||p.video?.url||'';
+            const url=safeUrl(raw);
+            if(!url)return'';
+            let embed='';
+            try{
+                const parsed=new URL(url),host=parsed.hostname.replace(/^www\./,'');
+                if(host==='youtu.be')embed=`https://www.youtube.com/embed/${encodeURIComponent(parsed.pathname.slice(1).split('/')[0])}`;
+                else if(host.endsWith('youtube.com')){
+                    const id=parsed.searchParams.get('v')||parsed.pathname.match(/\/(?:shorts|embed)\/([^/?]+)/)?.[1];
+                    if(id)embed=`https://www.youtube.com/embed/${encodeURIComponent(id)}`;
+                }else if(host.endsWith('vimeo.com')){
+                    const id=parsed.pathname.match(/\/(?:video\/)?(\d+)/)?.[1];
+                    if(id)embed=`https://player.vimeo.com/video/${encodeURIComponent(id)}`;
+                }
+            }catch{}
+            const direct=Boolean(p.video?.url)||/\.(?:mp4|webm|ogg|mov)(?:$|[?#])/i.test(url);
+            const player=embed
+                ?`<iframe src="${esc(embed)}" title="${esc(p.title||'Project')} video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
+                :direct
+                    ?`<video controls playsinline preload="metadata"><source src="${esc(url)}">Your browser does not support this video.</video>`
+                    :`<iframe src="${esc(url)}" title="${esc(p.title||'Project')} video" loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+            return`<section class="section"><h2>Project video</h2><div class="video-shell">${player}</div></section>`;
+        }
+        function toggleTheme(){const n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('theme',n)}
+        function openLightbox(src){document.getElementById('lightboxImage').src=src;document.getElementById('lightbox').classList.add('open');document.body.style.overflow='hidden'}
+        function closeLightbox(){document.getElementById('lightbox').classList.remove('open');document.body.style.overflow=''}
+        loadProject();
+    </script>
+</body>
+</html>
