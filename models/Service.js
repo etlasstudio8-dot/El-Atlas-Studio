@@ -19,7 +19,8 @@ const serviceSchema = new mongoose.Schema({
     publicId: String
   },
   features: [{
-    type: mongoose.Schema.Types.Mixed  // accepts both strings and {title, description} objects
+    title: String,
+    description: String
   }],
   pricing: {
     startingPrice: Number,
