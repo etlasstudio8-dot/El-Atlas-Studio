@@ -27,4 +27,8 @@ services:
         sync: false
       - key: ADMIN_EMAIL
         value: alishafaq782@gmail.com
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
     healthCheckPath: /api/health

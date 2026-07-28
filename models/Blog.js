@@ -93,6 +93,5 @@ blogSchema.pre('save', function(next) {
 });
 
 blogSchema.index({ status: 1, publishDate: -1 });
-blogSchema.index({ slug: 1 });
 
 module.exports = mongoose.model('Blog', blogSchema);
