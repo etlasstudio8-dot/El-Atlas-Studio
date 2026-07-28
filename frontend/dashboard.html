@@ -3125,7 +3125,7 @@
         window.saveMember = async function (id) {
             const skillsRaw = document.getElementById('tm-skills').value.split(',').map(s => s.trim()).filter(Boolean);
             const photoUrl = document.getElementById('tm-photo').value.trim();
-            const body = { name: document.getElementById('tm-name').value.trim(), position: document.getElementById('tm-pos').value.trim(), bio: document.getElementById('tm-bio').value.trim(), email: document.getElementById('tm-email').value.trim(), phone: document.getElementById('tm-phone').value.trim(), expertise: skillsRaw, skills: skillsRaw, showOnWebsite: document.getElementById('tm-visible').checked, social: { instagram: document.getElementById('tm-ig').value.trim(), linkedin: document.getElementById('tm-li').value.trim() } };
+            const body = { name: document.getElementById('tm-name').value.trim(), position: document.getElementById('tm-pos').value.trim() || 'Team Member', bio: document.getElementById('tm-bio').value.trim(), email: document.getElementById('tm-email').value.trim(), phone: document.getElementById('tm-phone').value.trim(), expertise: skillsRaw, skills: skillsRaw, showOnWebsite: document.getElementById('tm-visible').checked, social: { instagram: document.getElementById('tm-ig').value.trim(), linkedin: document.getElementById('tm-li').value.trim() } };
             if (photoUrl) { body.image = { url: photoUrl }; body.avatar = photoUrl; }
             if (!body.name) return toast('Name required', 'err');
             const btn = document.getElementById('tm-btn'); spinBtn(btn, 'Saving…');
