@@ -49,10 +49,15 @@
             if (isFeatured !== undefined) query.isFeatured = isFeatured === 'true';
 
             let portfolioQuery = Portfolio.find(query);
-            // Home page cards do not need multi-megabyte base64 images or detail fields.
-            // Individual project pages still receive the complete document.
+            // Home page cards only need the first gallery image as a thumbnail.
+            // Individual project pages still receive the complete gallery.
             if (summary === 'true') {
-              portfolioQuery = portfolioQuery.select('-mainImage -images -features -technologies');
+              portfolioQuery = portfolioQuery.select({
+                mainImage: 0,
+                features: 0,
+                technologies: 0,
+                images: { $slice: 1 }
+              });
             }
 
             const portfolio = await portfolioQuery

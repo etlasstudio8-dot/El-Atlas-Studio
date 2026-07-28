@@ -3931,7 +3931,10 @@
             const catLabel = { web: 'Web Development', software: 'Software', brand: 'Branding', video: 'Video Editing', design: 'UI/UX Design', marketing: 'Digital Marketing', other: 'Other' };
             const VISIBLE_INIT = 5;
             const cards = published.map((p, idx) => {
-                const imgUrl = p.mainImage && p.mainImage.url ? p.mainImage.url : (p.image || '');
+                const firstGalleryImage = Array.isArray(p.images) && p.images.length
+                    ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0]?.url || '')
+                    : '';
+                const imgUrl = p.mainImage && p.mainImage.url ? p.mainImage.url : (p.image || firstGalleryImage || '');
                 const rawCat = p.category || 'web';
                 const normalized = rawCat.toLowerCase();
                 const cat = normalized.includes('web') || normalized.includes('e-commerce') ? 'web'

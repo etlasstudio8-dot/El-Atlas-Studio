@@ -2828,7 +2828,7 @@
                 const items = await apiGet('/portfolio'); const arr = Array.isArray(items) ? items : [];
                 arr.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
                 const cards = arr.map((p, idx) => {
-                    const img = p.mainImage?.url || p.mainImage || p.image || '';
+                    const img = p.mainImage?.url || p.mainImage || p.image || p.images?.[0]?.url || '';
                     const catLabel = PORT_CATS.find(c => c.val === p.category)?.label || p.category || '';
                     const k = storeObj(p);
                     const dragHandle = isAdmin() ? `<div class="drag-handle" title="Drag to reorder"><i class="ti ti-grip-vertical"></i></div>` : '';
@@ -2861,7 +2861,7 @@
         };
         window.openPortModal = function (k) {
             const p = k ? getObj(k) : null;
-            const img = p?.mainImage?.url || p?.mainImage || p?.image || '';
+            const img = p?.mainImage?.url || p?.mainImage || p?.image || p?.images?.[0]?.url || '';
             const rawCategory = String(p?.category || 'web').toLowerCase();
             const selectedCategory = rawCategory.includes('video') ? 'video'
                 : rawCategory.includes('software') || rawCategory.includes('mobile') ? 'software'
