@@ -56,6 +56,20 @@ exports.uploadMultipleImages = multer({
   fileFilter: imageFilter
 }).array('images', 10); // Max 10 images
 
+const videoFilter = (req, file, cb) => {
+  const allowedExtensions = /mp4|webm|mov|m4v|avi|mkv/;
+  const validExtension = allowedExtensions.test(path.extname(file.originalname).toLowerCase());
+  const validMime = file.mimetype.startsWith('video/');
+  if (validExtension && validMime) return cb(null, true);
+  cb(new Error('Only video files are allowed (mp4, webm, mov, m4v, avi, mkv)'));
+};
+
+exports.uploadSingleVideo = multer({
+  storage,
+  limits: { fileSize: 100 * 1024 * 1024 },
+  fileFilter: videoFilter
+}).single('video');
+
 // Upload to Cloudinary
 exports.uploadToCloudinary = async (file, folder = 'el-atlas') => {
   try {
@@ -94,10 +108,30 @@ exports.uploadToCloudinary = async (file, folder = 'el-atlas') => {
   }
 };
 
+exports.uploadVideoToCloudinary = async (file, folder = 'el-atlas/portfolio-videos') => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: 'video' },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve({
+          url: result.secure_url,
+          publicId: result.public_id,
+          format: result.format,
+          resourceType: result.resource_type,
+          duration: result.duration
+        });
+      }
+    );
+    const { Readable } = require('stream');
+    Readable.from(file.buffer).pipe(uploadStream);
+  });
+};
+
 // Delete from Cloudinary
-exports.deleteFromCloudinary = async (publicId) => {
+exports.deleteFromCloudinary = async (publicId, resourceType = 'image') => {
   try {
-    const result = await cloudinary.uploader.destroy(publicId);
+    const result = await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
     return result;
   } catch (error) {
     throw error;
@@ -115,7 +149,7 @@ exports.handleMulterError = (err, req, res, next) => {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
         success: false,
-        message: 'File size too large. Maximum allowed size is 5MB'
+        message: 'File size too large. Images can be up to 5 MB and project videos up to 100 MB.'
       });
     }
     if (err.code === 'LIMIT_FILE_COUNT') {
