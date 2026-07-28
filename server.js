@@ -16,7 +16,6 @@ const allowedOrigins = [
   process.env.DASHBOARD_URL,
   // Firebase hosting
   'https://elatlas-studio.web.app',
-  'https://elatlas-studio.netlify.app',
   'https://elatlas-studio.firebaseapp.com',
   // Render (your admin HTML is served from here too)
   'https://el-atlas-studio.onrender.com',
