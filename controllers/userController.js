@@ -27,6 +27,31 @@ exports.getUserById = async (req, res) => {
   }
 };
 
+// @desc    General update user (Admin only) — name, role, permissions, password, position, avatar
+exports.updateUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('+password');
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const { name, role, permissions, password, position, avatar, avatarImg } = req.body;
+
+    if (name) user.name = name;
+    if (role) user.role = role;
+    if (position !== undefined) user.position = position;
+    if (avatar !== undefined) user.avatar = avatar;
+    if (avatarImg !== undefined) user.avatarImg = avatarImg;
+    if (Array.isArray(permissions)) user.permissions = permissions;
+    if (password && password.length >= 6) user.password = password; // pre-save hook hashes it
+
+    await user.save();
+
+    const updated = await User.findById(user._id).select('-password');
+    res.status(200).json({ success: true, message: 'User updated successfully', data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error updating user', error: error.message });
+  }
+};
+
 // @desc    Update user role and permissions (Admin only)
 exports.updateUserRole = async (req, res) => {
   try {
@@ -129,4 +154,3 @@ exports.uploadAvatar = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error uploading avatar', error: error.message });
   }
 };
-
