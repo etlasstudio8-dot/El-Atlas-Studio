@@ -129,3 +129,4 @@ exports.uploadAvatar = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error uploading avatar', error: error.message });
   }
 };
+
