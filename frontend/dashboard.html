@@ -2886,7 +2886,10 @@
                 </div>
                 <div id="pf-visual-fields">
                     <div class="field"><label>Main Project Image</label>${imgField('pf-img', 'pf-imgp', false, img)}</div>
+                </div>
+                <div id="pf-gallery-fields">
                     <div class="field"><label>Project Gallery Image URLs</label><textarea id="pf-gallery" placeholder="Paste one image URL per line">${esc((p?.images || []).map(item => typeof item === 'string' ? item : item?.url || '').filter(Boolean).join('\n'))}</textarea><small style="color:var(--text3)">Paste one image URL per line. All images will appear on the project detail page.</small></div>
+                    <div class="field"><label>Or Upload Project Images</label><label class="upload-label"><i class="ti ti-photo-plus"></i><span id="pf-gallery-names">Choose up to 8 images</span><input id="pf-gallery-files" type="file" accept="image/*" multiple onchange="document.getElementById('pf-gallery-names').textContent=this.files.length?this.files.length+' image(s) selected':'Choose up to 8 images'"></label><small style="color:var(--text3)">Images will be optimized and displayed with the project video.</small></div>
                 </div>
                 <div id="pf-video-fields">
                     <div class="field"><label>Project Video Link</label><input id="pf-video-url" value="${esc(p?.videoUrl || '')}" placeholder="YouTube, Vimeo, iframe page, or direct MP4/WebM URL"><small style="color:var(--text3)">YouTube/Vimeo links will open in an embedded player. Direct video links use the native video player.</small></div>
@@ -2903,11 +2906,35 @@
             const isVisual = isWeb || ['brand', 'design', 'marketing', 'other'].includes(cat) || cat.includes('brand') || cat.includes('design') || cat.includes('market');
             const webFields = document.getElementById('pf-web-fields');
             const visualFields = document.getElementById('pf-visual-fields');
+            const galleryFields = document.getElementById('pf-gallery-fields');
             const videoFields = document.getElementById('pf-video-fields');
             if (webFields) webFields.style.display = isWeb || cat === 'other' ? '' : 'none';
             if (visualFields) visualFields.style.display = isVisual && !isVideo ? '' : 'none';
+            if (galleryFields) galleryFields.style.display = isVisual || isVideo ? '' : 'none';
             if (videoFields) videoFields.style.display = isVideo ? '' : 'none';
         };
+        function optimizeProjectImage(file) {
+            return new Promise((resolve, reject) => {
+                if (!file?.type?.startsWith('image/')) return reject(new Error(`${file?.name || 'File'} is not an image`));
+                const reader = new FileReader();
+                reader.onerror = () => reject(new Error(`Could not read ${file.name}`));
+                reader.onload = event => {
+                    const image = new Image();
+                    image.onerror = () => reject(new Error(`Could not process ${file.name}`));
+                    image.onload = () => {
+                        const max = 1600;
+                        const scale = Math.min(1, max / Math.max(image.width, image.height));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.max(1, Math.round(image.width * scale));
+                        canvas.height = Math.max(1, Math.round(image.height * scale));
+                        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+                        resolve({ url: canvas.toDataURL('image/webp', 0.8), caption: file.name });
+                    };
+                    image.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
         window.savePort = async function (id) {
             const category = document.getElementById('pf-cat').value;
             const isVideo = category === 'video';
@@ -2927,8 +2954,10 @@
             }
             if (isVisual) {
                 body.mainImage = { url: document.getElementById('pf-img').value.trim() };
-                body.images = document.getElementById('pf-gallery').value.split('\n').map(url => url.trim()).filter(Boolean).map(url => ({ url }));
                 body.image = document.getElementById('pf-img').value.trim();
+            }
+            if (isVisual || isVideo) {
+                body.images = document.getElementById('pf-gallery').value.split('\n').map(url => url.trim()).filter(Boolean).map(url => ({ url }));
             }
             if (isVideo) body.videoUrl = document.getElementById('pf-video-url').value.trim();
             if (!body.title || !body.description) return toast('Title and description required', 'err');
@@ -2937,6 +2966,12 @@
             if (isVideo && !body.videoUrl && !selectedVideoFile && !hasExistingVideo) return toast('Add a video link or upload a video file', 'err');
             const btn = document.getElementById('pf-btn'); spinBtn(btn, 'Saving…');
             try {
+                const galleryFiles = [...(document.getElementById('pf-gallery-files')?.files || [])];
+                if (galleryFiles.length > 8) throw new Error('You can upload a maximum of 8 project images');
+                if (galleryFiles.length) {
+                    spinBtn(btn, 'Optimizing images...');
+                    body.images = [...(body.images || []), ...(await Promise.all(galleryFiles.map(optimizeProjectImage)))];
+                }
                 const result = id ? await api('PUT', '/portfolio/' + id, body) : await api('POST', '/portfolio', body);
                 const projectId = id || result?.data?._id;
                 const videoFile = selectedVideoFile;
@@ -2948,7 +2983,7 @@
                     form.append('video', videoFile);
                     await apiForm('/portfolio/' + projectId + '/video', form);
                 }
-                toast(videoFile ? 'Project and video saved' : 'Project saved');
+                toast(videoFile ? 'Project, images and video saved' : 'Project saved');
                 closeModal();
                 PAGES.portfolio();
             } catch (e) { toast(e.message, 'err'); }

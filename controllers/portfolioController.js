@@ -16,7 +16,6 @@
             record.technologies = [];
             record.features = [];
             record.mainImage = undefined;
-            record.images = [];
           } else {
             record.videoUrl = undefined;
             record.video = undefined;
@@ -32,7 +31,6 @@
         const cleanupAssetsForCategory = async (portfolio, kind) => {
           if (kind === 'video') {
             if (portfolio.mainImage?.publicId) await deleteFromCloudinary(portfolio.mainImage.publicId).catch(() => {});
-            await Promise.all((portfolio.images || []).filter(img => img.publicId).map(img => deleteFromCloudinary(img.publicId).catch(() => {})));
           } else if (portfolio.video?.publicId) {
             await deleteFromCloudinary(portfolio.video.publicId, 'video').catch(() => {});
           }
@@ -109,7 +107,7 @@
             }
 
             // Handle multiple images
-            if (kind !== 'video' && req.files && req.files.images) {
+            if (req.files && req.files.images) {
               portfolioData.images = await Promise.all(
                 req.files.images.map(async (file) => {
                   const upload = await uploadToCloudinary(file, 'el-atlas/portfolio');
@@ -149,6 +147,16 @@
               }
               const upload = await uploadToCloudinary(req.files.mainImage[0], 'el-atlas/portfolio');
               portfolio.mainImage = { url: upload.url, publicId: upload.publicId };
+            }
+
+            if (req.files && req.files.images) {
+              const uploadedImages = await Promise.all(
+                req.files.images.map(async (file) => {
+                  const upload = await uploadToCloudinary(file, 'el-atlas/portfolio');
+                  return { url: upload.url, publicId: upload.publicId };
+                })
+              );
+              portfolio.images = [...(portfolio.images || []), ...uploadedImages];
             }
 
             portfolio.updatedBy = req.user.id;
