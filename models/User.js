@@ -31,7 +31,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'editor', 'viewer', 'moderator', 'contributor'],
+    // Keep this in sync with the roles selectable in the dashboard.
+    enum: ['admin', 'developer', 'software', 'social', 'handler', 'video', 'editor', 'moderator', 'employee', 'viewer', 'contributor'],
     default: 'viewer'
   },
   permissions: {
@@ -110,6 +111,25 @@ userSchema.methods.hasPermission = function(permission) {
   const userPerms = this.permissions.length > 0 ? this.permissions : this.getRolePermissions();
   
   if (userPerms.includes('all')) return true;
+
+  // The dashboard's Access modal stores page access (for example
+  // "portfolio" and "services"), while API routes protect actions (for
+  // example "portfolio:edit"). Treat page access as edit access for that
+  // page so employees granted access can actually create, update and upload.
+  // This also supports employees whose access was saved before this mapping
+  // existed, without requiring an admin to re-save every account.
+  const pageForPermission = {
+    'portfolio:edit': 'portfolio',
+    'services:edit': 'services',
+    'blog:edit': 'blog',
+    'content:edit': 'content',
+    'team:edit': 'team',
+    'clients:view': 'contacts',
+    'clients:respond': 'contacts'
+  };
+  if (pageForPermission[permission] && userPerms.includes(pageForPermission[permission])) {
+    return true;
+  }
   
   return userPerms.some(perm => {
     if (perm === permission) return true;
