@@ -2321,8 +2321,10 @@
             { val: 'other', label: 'Other' },
         ];
 
+        const PUBLIC_SITE_URL = 'https://elatlas-studio.web.app/';
+        const LEGACY_SITE_URL = 'https://el-atlas-studio.onrender.com';
         let user = null, activePage = 'dashboard', slim = false, toastTm = null;
-        let _sitUrl = 'https://el-atlas-studio.onrender.com';
+        let _sitUrl = PUBLIC_SITE_URL;
         const _store = {}; let _si = 0;
         function storeObj(o) { const k = 'o' + (++_si); _store[k] = o; return k; }
         function getObj(k) { return _store[k] || null; }
@@ -2567,7 +2569,9 @@
             }
             refreshSidebarUser();
             const saved = localStorage.getItem('ea_site_url');
-            if (saved) _sitUrl = saved;
+            // The public website is hosted on Firebase. Employee browsers may
+            // still contain the old Render URL, so never use that value here.
+            _sitUrl = isAdmin() && saved && saved !== LEGACY_SITE_URL ? saved : PUBLIC_SITE_URL;
             const btn = document.getElementById('view-site-btn'); if (btn) btn.href = _sitUrl;
         }
         function refreshSidebarUser() {
@@ -3530,7 +3534,8 @@
             } catch (e) { }
             const photo = fresh?.avatarImg || fresh?.avatar || fresh?.image?.url || '';
             const avHtml = photo ? `<img src="${esc(photo)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.style.display='none'">` : `<span style="font-size:22px;font-weight:700;color:var(--accent)">${esc((fresh?.name || '?')[0].toUpperCase())}</span>`;
-            const savedSite = localStorage.getItem('ea_site_url') || 'https://el-atlas-studio.onrender.com';
+            const configuredSite = localStorage.getItem('ea_site_url');
+            const savedSite = configuredSite && configuredSite !== LEGACY_SITE_URL ? configuredSite : PUBLIC_SITE_URL;
             const p = userPerms();
             const currentSkills = fresh?.skills || fresh?.expertise || [];
             const currentResume = fresh?.resumeUrl || '';
